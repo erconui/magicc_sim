@@ -21,7 +21,8 @@ namespace gazebo {
 AutoLevelPlugin::AutoLevelPlugin() : ModelPlugin() {}
 
 AutoLevelPlugin::~AutoLevelPlugin() {
-  event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+  updateConnection_.reset();
+  // event::Events::DisconnectWorldUpdateBegin(updateConnection_);
 }
 
 void AutoLevelPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
@@ -74,14 +75,14 @@ void AutoLevelPlugin::Reset()
 // Return the Sign of the argument
 void AutoLevelPlugin::OnUpdate(const common::UpdateInfo & _info)
 {
-    math::Vector3 global_pose = model_link->GetWorldCoGPose().rot.GetAsEuler();
-    math::Vector3 relative_pose = model_link->GetRelativePose().rot.GetAsEuler();
+    ignition::math::Vector3d global_pose = model_link->WorldCoGPose().Rot().Euler();
+    ignition::math::Vector3d relative_pose = model_link->RelativePose().Rot().Euler();
 
-    double roll = -global_pose.x;
-    double pitch =  -global_pose.y;
-    double yaw = -relative_pose.z;
+    double roll = -global_pose.X();
+    double pitch =  -global_pose.Y();
+    double yaw = -relative_pose.Z();
 
-    sensor_link->SetRelativePose(math::Pose(0, 0, -.50, roll, pitch, yaw));
+    sensor_link->SetRelativePose(ignition::math::Pose3d(0, 0, -.50, roll, pitch, yaw));
 
 }
 

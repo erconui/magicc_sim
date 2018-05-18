@@ -492,7 +492,7 @@ void GazeboRosCameraUtils::Init()
   else
   {
     // check against float precision
-    if (!gazebo::math::equal(this->focal_length_, computed_focal_length))
+    if (!ignition::math::equal(this->focal_length_, computed_focal_length))
     {
       ROS_WARN("The <focal_length>[%f] you have provided for camera_ [%s]"
                " is inconsistent with specified image_width [%d] and"
@@ -634,7 +634,7 @@ void GazeboRosCameraUtils::PublishCameraInfo()
         this->sensor_update_time_ = this->parentSensor_->GetLastUpdateTime();
     # endif
 
-    common::Time cur_time = this->world_->GetSimTime();
+    common::Time cur_time = this->world_->SimTime();
     if (cur_time - this->last_info_update_time_ >= this->update_period_)
     {
       this->PublishCameraInfo(this->camera_info_pub_);

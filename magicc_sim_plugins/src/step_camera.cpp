@@ -11,6 +11,7 @@
 #include <gazebo/sensors/SensorManager.hh>
 #include <unistd.h>
 #include <math.h>
+#include <functional>
 
 #include <sensor_msgs/Illuminance.h>
 
@@ -23,7 +24,8 @@ StepCamera::StepCamera(){
 }
 
 StepCamera::~StepCamera(){
-    event::Events::DisconnectWorldUpdateBegin(_updateConnection);
+    _updateConnection.reset();
+    // event::Events::DisconnectWorldUpdateBegin(_updateConnection);
 }
 
 void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
@@ -48,7 +50,7 @@ void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 
     GazeboRosCameraUtils::Load(_parent, _sdf);
 
-    float worldRate = physics::get_world()->GetPhysicsEngine()->GetMaxStepSize();
+    float worldRate = physics::get_world()->Physics()->GetMaxStepSize();
 
     # if GAZEBO_MAJOR_VERSION >= 7
         std::string sensor_name = this->parentSensor_->Name();
@@ -79,7 +81,7 @@ void StepCamera::OnUpdateParentSensor(){
 }
 
 void StepCamera::OnUpdate(const common::UpdateInfo&){
-   if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (this->_updateRate) ){
+   if(this->parentSensor->IsActive() && (this->world_->SimTime() - this->last_update_time_) >= (this->_updateRate) ){
      // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
      if(!this->_updateLock.timed_lock(boost::posix_time::seconds(this->_updateRate))){
          ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
@@ -97,7 +99,7 @@ void StepCamera::OnNewFrame(const unsigned char *_image,
     unsigned int _width, unsigned int _height, unsigned int _depth,
     const std::string &_format)
 {
-    common::Time current_time = this->world_->GetSimTime();
+    common::Time current_time = this->world_->SimTime();
 
     if (this->parentSensor->IsActive() && (current_time - this->last_update_time_) >= (this->_updateRate))
     {
